@@ -95,7 +95,7 @@ public sealed class Queryable<TSource>
     /// <summary>
     /// ORDER BY 升序
     /// </summary>
-    public Queryable<TSource> OrderBy<TKey>(Expression<Func<TSource, TKey>> keySelector)
+    public Queryable<TSource> Asc<TKey>(Expression<Func<TSource, TKey>> keySelector)
     {
         _orderByExpression = keySelector as LambdaExpression;
         _orderByDescending = false;
@@ -105,7 +105,7 @@ public sealed class Queryable<TSource>
     /// <summary>
     /// ORDER BY 降序
     /// </summary>
-    public Queryable<TSource> OrderByDescending<TKey>(Expression<Func<TSource, TKey>> keySelector)
+    public Queryable<TSource> Desc<TKey>(Expression<Func<TSource, TKey>> keySelector)
     {
         _orderByExpression = keySelector as LambdaExpression;
         _orderByDescending = true;
@@ -384,6 +384,210 @@ public sealed class Queryable<TSource>
         var command = _provider.CreateCommand(sql, whereResult.Parameters.ToArray());
         var result = await command.ExecuteScalarAsync();
         return result != null ? Convert.ToInt32(result) : 0;
+    }
+
+    /// <summary>
+    /// 分页查询（不返回总记录数）
+    /// </summary>
+    public List<TSource> ToPageList(int pageNumber, int pageSize)
+    {
+        if (pageNumber < 1) pageNumber = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        var skip = (pageNumber - 1) * pageSize;
+        var take = pageSize;
+
+        // 临时保存现有的 _skip 和 _take
+        var originalSkip = _skip;
+        var originalTake = _take;
+
+        _skip = skip;
+        _take = take;
+
+        try
+        {
+            return ToList();
+        }
+        finally
+        {
+            // 恢复原有的值
+            _skip = originalSkip;
+            _take = originalTake;
+        }
+    }
+
+    /// <summary>
+    /// 分页查询（返回总记录数）
+    /// </summary>
+    public List<TSource> ToPageList(int pageNumber, int pageSize, ref int totalCount)
+    {
+        if (pageNumber < 1) pageNumber = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        // 查询总记录数
+        totalCount = Count();
+
+        var skip = (pageNumber - 1) * pageSize;
+        var take = pageSize;
+
+        // 临时保存现有的 _skip 和 _take
+        var originalSkip = _skip;
+        var originalTake = _take;
+
+        _skip = skip;
+        _take = take;
+
+        try
+        {
+            return ToList();
+        }
+        finally
+        {
+            // 恢复原有的值
+            _skip = originalSkip;
+            _take = originalTake;
+        }
+    }
+
+    /// <summary>
+    /// 分页查询（返回总记录数和总页数）
+    /// </summary>
+    public List<TSource> ToPageList(int pageNumber, int pageSize, ref int totalCount, ref int totalPages)
+    {
+        if (pageNumber < 1) pageNumber = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        // 查询总记录数
+        totalCount = Count();
+
+        // 计算总页数
+        totalPages = totalCount == 0 ? 0 : (int)Math.Ceiling((double)totalCount / pageSize);
+
+        var skip = (pageNumber - 1) * pageSize;
+        var take = pageSize;
+
+        // 临时保存现有的 _skip 和 _take
+        var originalSkip = _skip;
+        var originalTake = _take;
+
+        _skip = skip;
+        _take = take;
+
+        try
+        {
+            return ToList();
+        }
+        finally
+        {
+            // 恢复原有的值
+            _skip = originalSkip;
+            _take = originalTake;
+        }
+    }
+
+    /// <summary>
+    /// 异步分页查询（不返回总记录数）
+    /// </summary>
+    public async Task<List<TSource>> ToPageListAsync(int pageNumber, int pageSize)
+    {
+        if (pageNumber < 1) pageNumber = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        var skip = (pageNumber - 1) * pageSize;
+        var take = pageSize;
+
+        // 临时保存现有的 _skip 和 _take
+        var originalSkip = _skip;
+        var originalTake = _take;
+
+        _skip = skip;
+        _take = take;
+
+        try
+        {
+            return await ToListAsync();
+        }
+        finally
+        {
+            // 恢复原有的值
+            _skip = originalSkip;
+            _take = originalTake;
+        }
+    }
+
+    /// <summary>
+    /// 异步分页查询（返回总记录数）
+    /// </summary>
+    public async Task<(List<TSource> Items, int TotalCount)> ToPageListWithCountAsync(int pageNumber, int pageSize)
+    {
+        if (pageNumber < 1) pageNumber = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        // 查询总记录数
+        var totalCount = await CountAsync();
+
+        var skip = (pageNumber - 1) * pageSize;
+        var take = pageSize;
+
+        // 临时保存现有的 _skip 和 _take
+        var originalSkip = _skip;
+        var originalTake = _take;
+
+        _skip = skip;
+        _take = take;
+
+        List<TSource> items;
+        try
+        {
+            items = await ToListAsync();
+        }
+        finally
+        {
+            // 恢复原有的值
+            _skip = originalSkip;
+            _take = originalTake;
+        }
+
+        return (items, totalCount);
+    }
+
+    /// <summary>
+    /// 异步分页查询（返回总记录数和总页数）
+    /// </summary>
+    public async Task<(List<TSource> Items, int TotalCount, int TotalPages)> ToPageListWithTotalPagesAsync(int pageNumber, int pageSize)
+    {
+        if (pageNumber < 1) pageNumber = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        // 查询总记录数
+        var totalCount = await CountAsync();
+
+        // 计算总页数
+        var totalPages = totalCount == 0 ? 0 : (int)Math.Ceiling((double)totalCount / pageSize);
+
+        var skip = (pageNumber - 1) * pageSize;
+        var take = pageSize;
+
+        // 临时保存现有的 _skip 和 _take
+        var originalSkip = _skip;
+        var originalTake = _take;
+
+        _skip = skip;
+        _take = take;
+
+        List<TSource> items;
+        try
+        {
+            items = await ToListAsync();
+        }
+        finally
+        {
+            // 恢复原有的值
+            _skip = originalSkip;
+            _take = originalTake;
+        }
+
+        return (items, totalCount, totalPages);
     }
 
     /// <summary>

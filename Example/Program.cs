@@ -61,7 +61,7 @@ public class Program
             Console.WriteLine("2. 条件查询 (Id > 0):");
             var filteredUsers = await db.Queryable<TestUser>()
                 .Where(it => it.Id > 0)
-                .OrderBy(it => it.Id)
+                .Asc(it => it.Id)
                 .Take(5)
                 .ToListAsync();
             foreach (var user in filteredUsers)
@@ -228,10 +228,12 @@ public class Program
             Console.WriteLine("   期望: SELECT 只查询 Id，不查询 user_name（使用固定值 \"zzz\"）");
             try
             {
+                var user = new TestUser() { UserName = "user2"};
                 var query1 = db.Queryable<TestUser>()
-                    .Where(x => x.UserName == "user2" || x.UserName == "user3@example.com")
+                    .Where(x => x.UserName.Contains("user"))
                     .Where(x => x.Email == "user2@example.com")
-                    .Select<TestUser>();
+                    .Select<TestUser>()
+                    .Asc(x=>x.UserName);
 
                 var result1 = await query1.ToListAsync();
 

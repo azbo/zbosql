@@ -282,6 +282,74 @@ await db.Deleteable<TestUser>()
     .ExecuteAsync();
 ```
 
+### 11. 分页查询
+
+支持同步和异步分页，提供多种重载：
+
+#### 11.1 基本分页（不返回总数）
+
+```csharp
+// 同步
+var users = db.Queryable<TestUser>()
+    .Where(it => it.Id > 0)
+    .OrderBy(it => it.Id)
+    .ToPageList(1, 10);  // 第1页，每页10条
+// 生成 SQL: SELECT ... FROM ... WHERE ... ORDER BY ... LIMIT 10 OFFSET 0
+
+// 异步
+var users = await db.Queryable<TestUser>()
+    .Where(it => it.Id > 0)
+    .OrderBy(it => it.Id)
+    .ToPageListAsync(1, 10);
+```
+
+#### 11.2 分页查询（返回总记录数）
+
+```csharp
+// 同步 - 使用 ref 参数
+int totalCount = 0;
+var users = db.Queryable<TestUser>()
+    .Where(it => it.Id > 0)
+    .OrderBy(it => it.Id)
+    .ToPageList(1, 10, ref totalCount);
+Console.WriteLine($"当前页: {users.Count} 条，总记录数: {totalCount}");
+
+// 异步 - 使用 ValueTuple
+var (items, total) = await db.Queryable<TestUser>()
+    .Where(it => it.Id > 0)
+    .OrderBy(it => it.Id)
+    .ToPageListWithCountAsync(1, 10);
+Console.WriteLine($"当前页: {items.Count} 条，总记录数: {total}");
+```
+
+#### 11.3 分页查询（返回总记录数和总页数）
+
+```csharp
+// 同步 - 使用 ref 参数
+int totalCount = 0, totalPages = 0;
+var users = db.Queryable<TestUser>()
+    .Where(it => it.Id > 0)
+    .OrderBy(it => it.Id)
+    .ToPageList(1, 10, ref totalCount, ref totalPages);
+Console.WriteLine($"总页数: {totalPages}");
+
+// 异步 - 使用 ValueTuple
+var (items, total, pages) = await db.Queryable<TestUser>()
+    .Where(it => it.Id > 0)
+    .OrderBy(it => it.Id)
+    .ToPageListWithTotalPagesAsync(1, 10);
+Console.WriteLine($"总页数: {pages}");
+```
+
+**分页参数说明**：
+
+| 参数 | 说明 | 默认值 |
+|------|------|--------|
+| `pageNumber` | 页码（从1开始） | 自动修正为 ≥1 |
+| `pageSize` | 每页记录数 | 自动修正为 ≥1，默认10 |
+
+**总页数计算公式**：`总页数 = Math.Ceiling(总记录数 / 每页记录数)`
+
 ## 生成的 SQL 示例
 
 所有 SQL 语句都会自动添加来源注释：

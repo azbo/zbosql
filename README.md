@@ -211,7 +211,49 @@ var results = await db.Queryable<TestUser>()
 - ✅ 如果 Select 字段在固定值字典中，使用固定值；否则查询数据库
 - ✅ 如果**所有** Select 字段都是固定值，使用 `SELECT 1`，不查询任何字段值
 
-### 7. 插入操作
+### 7. 字符串模糊查询
+
+支持 `Contains`、`StartsWith`、`EndsWith` 三种字符串匹配方法：
+
+```csharp
+// Contains - 包含字符串
+var results = await db.Queryable<TestUser>()
+    .Where(it => it.UserName.Contains("admin"))
+    .ToListAsync();
+// 生成 SQL: WHERE "username" LIKE @p0
+// 参数: @p0 = "%admin%"
+
+// StartsWith - 以字符串开头
+var results = await db.Queryable<TestUser>()
+    .Where(it => it.UserName.StartsWith("admin"))
+    .ToListAsync();
+// 生成 SQL: WHERE "username" LIKE @p0
+// 参数: @p0 = "admin%"
+
+// EndsWith - 以字符串结尾
+var results = await db.Queryable<TestUser>()
+    .Where(it => it.Email.EndsWith("@example.com"))
+    .ToListAsync();
+// 生成 SQL: WHERE "email" LIKE @p0
+// 参数: @p0 = "%@example.com"
+
+// 组合使用
+var results = await db.Queryable<TestUser>()
+    .Where(it => it.UserName.StartsWith("user") && it.Email.Contains("@example.com"))
+    .ToListAsync();
+// 生成 SQL: WHERE (("username" LIKE @p0) AND ("email" LIKE @p1))
+// 参数: @p0 = "user%", @p1 = "%@example.com"
+```
+
+**SQL 映射关系**：
+
+| C# 方法 | SQL 操作 | 示例值 | SQL 参数 |
+|---------|----------|--------|----------|
+| `Contains("abc")` | `LIKE` | `abc` | `%abc%` |
+| `StartsWith("abc")` | `LIKE` | `abc` | `abc%` |
+| `EndsWith("abc")` | `LIKE` | `abc` | `%abc` |
+
+### 8. 插入操作
 
 ```csharp
 var newUser = new TestUser
@@ -223,7 +265,7 @@ await db.Insertable(newUser).ExecuteAsync();
 // newUser.Id 自动获取返回的 ID
 ```
 
-### 8. 更新操作
+### 9. 更新操作
 
 ```csharp
 newUser.Email = "updated@example.com";
@@ -232,7 +274,7 @@ await db.Updateable(newUser)
     .ExecuteAsync();
 ```
 
-### 9. 删除操作
+### 10. 删除操作
 
 ```csharp
 await db.Deleteable<TestUser>()

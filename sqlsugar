@@ -1,0 +1,40 @@
+返回一个字段和多个字段
+List<int> listInt=db.Queryable<Student>().Select(it=> it.Id).ToList();//返回一个字段
+DataTable list=db.Queryable<Student>().Select(it=>new { id=it.Id,name=it.Name}).ToDataTable();//2个字段 
+List<Class1>list=db.Queryable<Student>().Select(it=>new Class1{id=it.Id,name=it.Name}).ToList();//2个字段 
+List<dynamic>list=db.Queryable<Student>().Select(it=>(dynamic)new{id=it.Id,name=it.Name}).ToList(); 
+ 
+//动态 
+List<int> listInt=db.Queryable<Student>().Select<int>("id").ToList();
+List<Order> listInt=db.Queryable<Student>().Select<ViewModel>("id as id, name as name").ToList();
+
+单表返回DTO
+//返回匿名对象
+var dynamic = db.Queryable<Student>().Select<dynamic>().ToList();
+//Select * from Student
+ 
+//手动：返回匿名集合 支持跨程序集
+List<dynamic> dynamicList = db.Queryable<Student>().Select(it=>(dynamic)new { id=it.id}).ToList();
+//Select id as id from Student Select只有一列所以只查一列
+ 
+//手动：返回匿名集合  不能跨程序集用
+var dynamic = db.Queryable<Student>().Select(it=> new { id=it.id}).ToList(); 
+ 
+//手动：返回类集合-手动
+List<Student> list= db.Queryable<Student>().Select(it=>new  Student{ id=it.id}).ToList();
+//Select id as id from Student Select只有一列所以只查一列
+ 
+//自动返回DTO集合: 请升级 5.1.3.2 
+var listDto= db.Queryable<Student>().Select<StudentDto>().ToList();//返回List
+ 
+//自动返回DTO : 请升级 5.1.3.35  
+var listDto= db.Queryable<Student>()
+            .Select(it=>new StudentDto()
+             {
+                  Count=100 //手动指定一列在自动映射
+             },
+             true)//true表式开启自动映射
+            .ToList();//返回List
+别名
+.Select(it=>new { id1=it.id ,name2 =it.name })
+//select id as id1,name as name2

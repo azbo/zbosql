@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;netstandard2.1</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ZboSql.PostgreSql</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>zbo</Authors>
+    <Description>ZboSql PostgreSQL driver</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql" Version="8.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ZboSql.Core\ZboSql.Core.csproj" />
+  </ItemGroup>
+
+</Project>

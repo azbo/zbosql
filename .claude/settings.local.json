@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(dotnet build:*)",
+      "Bash(find:*)",
+      "Bash(for:*)",
+      "Bash(do sed:*)",
+      "Bash(done:*)",
+      "Bash(cat:*)",
+      "Bash(dotnet run:*)",
+      "Bash(psql:*)",
+      "Bash(Example.exe)",
+      "Bash(git init:*)",
+      "Bash(gh:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

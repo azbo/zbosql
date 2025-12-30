@@ -2,6 +2,37 @@
 
 一个轻量级的 .NET ORM 框架，支持 Fluent API 链式调用和 SQL 来源追踪功能。
 
+## 更新日志
+
+### v0.2.0 (2025-01-XX)
+
+#### 🎉 新功能
+- **自动命名映射**：PascalCase 属性自动映射到 snake_case 数据库列
+  - `UserName` → `user_name`
+  - `EmailAddress` → `email_address`
+  - `ID` → `id`
+  - 支持通过 `[Column("custom_name")]` 特性覆盖默认映射
+
+#### 🐛 Bug 修复
+- **修复 OR 优化列名问题**：`ExpressionOptimizer.GetColumnName` 现在通过 `EntityInfo` 获取正确的列映射
+  - 修复前：`UserName` 被错误转换为 `username`
+  - 修复后：正确使用 `[Column("user_name")]` 映射
+- **修复 Select 投影优化问题**：改进 OR 条件与 AND 条件混合时的固定值分析
+  - 修复前：`(x.A || x.B) && x.B == C` 中，字段 B 被错误标记为固定值
+  - 修复后：正确识别 OR 中涉及的字段，不再将其标记为固定值
+
+#### 🔧 内部改进
+- 优化 `WhereAnalyzer` 的字段追踪逻辑
+- 新增 `FieldsInOrConditions` 集合记录出现在 OR 中的字段
+- 改进列名映射的一致性处理
+
+### v0.1.0 (2024-XX-XX)
+- 初始版本
+- 基础 CRUD 功能
+- LINQ 表达式支持
+- Select 投影优化
+- SQL 来源追踪
+
 ## 特性
 
 - **简单易用**：直观的 Fluent API 设计
